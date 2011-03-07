@@ -30,7 +30,7 @@ class FolderScanner {
 			$lastModified = (string)($file->updated);
 			$etag = (string)($file['etag']);
 			$path = $currentFolderDepth.($currentFolderDepth == '' ? '' : '/').StringTools::urlFormat(StringTools::indexClean($name));
-			$isNew = $this->lastUpdateDate < $lastModified;
+			$isNew = !file_exits($path) || $this->lastUpdateDate < $lastModified;
 
 			if($type == 'application/atom+xml;type=feed') {
 				if(!is_dir($path)) {
