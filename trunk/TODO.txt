@@ -1,0 +1,18 @@
+example:
+	Setup an example site (gt2901351@gmail.com, gt2901351gt2901351)
+	Make a header/footer to show how to build a menu
+	Write instructions
+
+src:
+	Add more comments (?)
+
+src/PageDownloader:
+	backup images/drawings/forumlas (with an option in config.php?)
+
+doc:
+	Preface
+	Getting Started
+	Installation and Configuration
+	Security considerations
+	Features
+	FAQ
