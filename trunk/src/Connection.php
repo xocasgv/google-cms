@@ -7,7 +7,7 @@ class Connection {
 	private $headers;
 	
 	// Initialize the curl object
-	// --------------------------------------
+	// --------------------------
 	public function __construct($loginARG, $passwordARG, $authStringARG) {
 		$this->login = (string) $loginARG;
 		$this->password = (string) $passwordARG;
@@ -28,7 +28,7 @@ class Connection {
 	
 	// Perform an authentified http GET request to the given url
 	// if response is "Token invalid" refresh the authString() make the request again
-	// --------------------------------------
+	// ------------------------------------------------------------------------------
 	public function getRequest($url) {
 		// Make the request
 		curl_setopt($this->curl, CURLOPT_URL, $url);
@@ -55,16 +55,27 @@ class Connection {
 	}
 	
 	// Return true if the page has been modified
-	// --------------------------------------
+	// -----------------------------------------
 	public function checkForUpdates($url, $etag) {
 		$this->headers[] = 'If-None-Match: '.$etag;
 		curl_setopt($this->curl, CURLOPT_HTTPHEADER, $this->headers);
 		return $this->getRequest($url);
 	}
 
-
+	// Closes the curl session
+	// -----------------------
+	public function close() {
+		curl_close($this->curl);
+	}
+	
+	// Return the current authentication string
+	// ----------------------------------------
+	public function getAuthString() {
+		return $this->authString;
+	}
+	
 	// Get a new AuthString using Google login/password
-	// --------------------------------------
+	// ------------------------------------------------
 	private function refreshAuthString() {
 		$tempCurl = curl_init();
 		$clientloginUrl = "https://www.google.com/accounts/ClientLogin";
@@ -92,14 +103,6 @@ class Connection {
 		    "GData-Version: 3.0",
 		);
 		curl_setopt($this->curl, CURLOPT_HTTPHEADER, $this->headers);
-	}
-	
-	public function close() {
-		curl_close($this->curl);
-	}
-
-	public function getAuthString() {
-		return $this->authString;
 	}
 }
 ?>

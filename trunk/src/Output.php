@@ -3,13 +3,15 @@ class Output {
 	private $fileMode;
 	private $folderMode;
 	private $minFlushNeeded;
-
-	function __construct($fileModeARG, $folderModeARG) {
+	
+	public function __construct($fileModeARG, $folderModeARG) {
 		$this->fileMode = $fileModeARG;
 		$this->folderMode = $folderModeARG;
 		$this->minFlushNeeded = true;
 	}
 	
+	// Print a String and a line break
+	// -------------------------------
 	public function sout($s) {
 		if($this->minFlushNeeded) {
 			// Minimum start for Safari flush
@@ -20,13 +22,17 @@ class Output {
 		flush(); // Display the page before the end of the script
 	}
 	
-	public function store($data, $target) {
+	// Store string in a file with the appropriate permissions
+	// -------------------------------------------------------
+	public function store($string, $target) {
 		$fp = fopen($target, "w");
-		fwrite($fp, $data);
+		fwrite($fp, $string);
 		fclose($fp);
 		@chmod($target, $this->fileMode);
 	}
-
+	
+	// Create a folder with the appropriate permissions
+	// ------------------------------------------------
 	public function createFolder($path) {
 		mkdir($path, $this->folderMode);		
 	}
