@@ -30,7 +30,7 @@ class FolderScanner {
 			$lastModified = (string)($file->updated);
 			$etag = (string)($file['etag']);
 			$path = $currentFolderDepth.($currentFolderDepth == '' ? '' : '/').StringTools::urlFormat(StringTools::indexClean($name));
-			$isNew = !file_exists($path) || $this->lastUpdateDate < $lastModified;
+			$isNew = $this->lastUpdateDate < $lastModified;
 
 			if($type == 'application/atom+xml;type=feed') {
 				if(!is_dir($path)) {
@@ -39,13 +39,13 @@ class FolderScanner {
 				}
 				// Recursively store the sub folder.
 				$foldersArray[$name.'!$!'] = $this->scan($srcUrl, $path);
-			} else if(substr($srcUrl, 0, 23) == 'https://docs.google.com') {
+			} else if(substr($srcUrl, 0, strlen('https://docs.g')) == 'https://docs.g') {
 				$pagesArray[] = $name.'!$!'; // !$! is a end of name protectio removed in StringTools::serializeForInclude(), i know that's not very nice..
-				if($isNew) {
+				if($isNew || !file_exists($path.'.php')) {
 					$this->output->sout("Page: $path");
 					$this->pageDownloader->download($srcUrl, $etag, $path.'.php');
 				}
-			} else if($isNew) {
+			} else if($isNew || !file_exists($path)) {
 				$this->output->store($this->connection->getRequest($srcUrl), $path);
 				$this->output->sout("File: $path");
 			}
