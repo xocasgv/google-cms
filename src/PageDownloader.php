@@ -5,14 +5,14 @@ class PageDownloader {
 	private $headerPath;
 	private $footerPath;
 	
-	function __construct(Connection $connectionARG, Output $outputARG, $headerPathARG, $footerPathARG) {
+	public function __construct(Connection $connectionARG, Output $outputARG, $headerPathARG, $footerPathARG) {
 		$this->connection = $connectionARG;
 		$this->output = $outputARG;
-		$this->headerPath = $headerPathARG;
-		$this->footerPath = $footerPathARG;
+		$this->headerPath = (string) $headerPathARG;
+		$this->footerPath = (string) $footerPathARG;
 	}
 	
-	function download($gdocUrl, $etag, $target) {
+	public function download($gdocUrl, $etag, $target) {
 		$content = $this->connection->getRequest($gdocUrl);
 		
 		$tagCssStart = '<style type="text/css">';

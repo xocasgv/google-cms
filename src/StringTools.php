@@ -1,8 +1,9 @@
 <?php
 class StringTools {
 	// Clean the index of a string if exists
-	// --------------------------------------
-	public static function indexClean($string) { // string
+	// -------------------------------------
+	public static function indexClean($s) {
+		$string = (string) $s;
 		if($string[0] >= '0' and $string[0] <= '9') {
 			$clean = trim(strstr($string, ' '));
 			if($clean != '') { // for $string = "25a8"
@@ -14,9 +15,10 @@ class StringTools {
 	
 	// Format a text for URL (special UTF-8)
 	// Note: dots are not removed
-	// Source: http://www.developpez.net/forums/d284411/php/langage/fonctions/suppression-daccents-utf-8-a/#post1787019
-	// --------------------------------------
-	public static function urlFormat($string) { // string
+	// Source: http://goo.gl/Guqk3
+	// -------------------------------------
+	public static function urlFormat($s) {
+		$string = (string) $s;
 	    $string = mb_strtolower($string, 'UTF-8');
 	    $string = str_replace(
 	        array(
@@ -44,9 +46,12 @@ class StringTools {
 	    return $string;
 	}
 
-	// serializeForInclude
-	// --------------------------------------	
-	public static function serializeForInclude($lastUpdateDate, $authString, $menuTree) { // string, string, array
+	// Serialize arguments as a php file "ready for include"
+	// -----------------------------------------------------
+	public static function serializeForInclude($lastUpdateDateARG, $authStringARG, $menuTreeARG) {
+		$lastUpdateDate = (string) $lastUpdateDateARG;
+		$authString = (string) $authStringARG;
+		$menuTree = (array) $menuTreeARG;
 		$mts = str_replace(
 			array( "] => ",	"[", "\n\n",	"\n",		'"Array",',	'(",', ')",',	'!$!'	),
 			array( '" => "', '"', "\n",		"\",\n",	"Array",	"(", "),",		''		),

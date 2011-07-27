@@ -11,8 +11,13 @@ src/PageDownloader:
 
 doc:
 	Preface
+		What's a CMS
+		Is GoogleCms for you?
+		Why use this product rather than another one?
 	Getting Started
-	Installation and Configuration
-	Security considerations
+		How it works
+		Setup the example site
+		Starting from scratch
 	Features
+	Security considerations
 	FAQ
