@@ -8,6 +8,9 @@ src:
 
 src/PageDownloader:
 	backup images/drawings/forumlas (with an option in config.php?)
+	
+src/GoogleCms:
+	display the page before checking for updates to get it asap
 
 doc:
 	Preface
