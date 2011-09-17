@@ -3,9 +3,6 @@ example:
 	Make a header/footer to show how to build a menu
 	Write instructions
 
-src:
-	Add more comments (?)
-
 src/PageDownloader:
 	backup images/drawings/forumlas (with an option in config.php?)
 	
