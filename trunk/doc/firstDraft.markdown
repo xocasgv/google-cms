@@ -40,17 +40,20 @@ GoogleCms is centred around Google Doc's text editor and file manager. The idea 
 	The page content extracted from the Google Document.
 	<?php include('somepath/footer.php'); ?>
 
-This allows to use header.php and footer.php to form a 3 pieces template. In addition to this manualy trigged global syncronisation there is also a by page update check that's performed at each page load. Head request on the google document to catch fresh modification.
+This allows to use header.php and footer.php to form a 3 pieces template. In addition to this manualy trigged global syncronisation there is also a by page update check that's performed at each page load.
+
+Durring the synchronisation there is also the generation of a php tree representing the hierarchy of the Google Doc file system. This tree is ment to be used to generate the menu.
 
 **Setup the example**   
 
 **Starting from scratch**   
-
+Google Docs
+header.php/footer.php
 
 Features
 --------
 
-Despite its simplicity GoogleCms? provides interesting features. Since Google Docs is used as a text editor we get:
+Despite its simplicity GoogleCms provides interesting features. Since Google Docs is used as a text editor we get:
 
 Wysiwyg
 Images import and resizing
