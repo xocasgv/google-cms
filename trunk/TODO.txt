@@ -21,3 +21,7 @@ doc:
 	Features
 	Security considerations
 	FAQ
+	
+new options in config.php:
+    dl page images
+    dl files (non pages)

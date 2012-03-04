@@ -31,54 +31,65 @@ Don't belive it? Keep on reading and you will see.
 (source: ` find . -type f -not -name "*.[jpgs][pniw][gf]" -exec wc -l {} +` the 07/09/11 on each projects source code.)
 
 
-Getting Started
----------------
-**How it works**   
+How it works
+------------
 GoogleCms is centred around Google Doc's text editor and file manager. The idea is to syncronise a Google Doc's folder with your webserver. Files are downloaded and Google Documents are turned into proper webpages. This webpages are stored as .php files with this layout:
 
-	<?php include('somepath/header.php'); ?>
-	The page content extracted from the Google Document.
-	<?php include('somepath/footer.php'); ?>
+<?php
+    $contentHtml = '<h2 class="c1"><span>html content</span></h2>';
+    $contentCss = '.c1{someCss;}';
+    include('path/to/the/template.php');
+?>
 
-This allows to use header.php and footer.php to form a 3 pieces template. In addition to this manualy trigged global syncronisation there is also a by page update check that's performed at each page load.
+This allows to use the template.php to assemble the pages as needed. In addition to this manualy trigged global synchronization there is also a page by page update check that's performed at each page load.
 
-Durring the synchronisation there is also the generation of a php tree representing the hierarchy of the Google Doc file system. This tree is ment to be used to generate the menu.
+Durring the synchronization there is also the generation of a PHP tree representing the hierarchy of the Google Doc file system. This tree is accesible from the $menuTree variable and is ment to be used in the template.php to generate a menu.
 
-**Setup the example**   
-
-**Starting from scratch**   
-Google Docs
-header.php/footer.php
 
 Features
 --------
-
 Despite its simplicity GoogleCms provides interesting features. Since Google Docs is used as a text editor we get:
+  *  Wysiwyg
+  *  Images import and resizing
+  *  Find and replace
+  *  Equations
+  *  Infinite undo (revisions)
+  *  Spell checker (37 languages)
+  *  Collaborative features: simultaneous edition, chat and comments
+  *  Highly secure login: SSL, Captcha and password recovery
+  *  Most navigators supported (included Android and iOS)
+  *  Trusted product which has already been tried and tested, and keeps being maintained by Google.
 
-Wysiwyg
-Images import and resizing
-Find and replace
-Equations
-Infinite undo (revisions)
-Spell checker (37 languages)
-Collaborative features: simultaneous edition, chat and comments
-Highly secure login: SSL, Captcha and password recovery
-Most navigators supported (included Android and iOS)
-Trusted product which has already been tried and tested, and keeps being maintained by Google.
 The unique function of this CMS consists in synchronizing Google Docs with a web server. Each GDocument corresponds to a web page. Few treatments are preformed during the transition from Google Docs to the web site.
+  *  A very flexible template system allows to assemble the page content with any existing design
+  *  Mail anti-spam protection using javascript ROT13 encryption
 
-A very basic template allows to assemble the page content with an existing design
-Mail anti-spam protection using javascript ROT13 encryption
 Pages are then stored on the web server using the Google Docs' naming hierarchy. For example the page "Notre université" in the folder "Contact" will be stored in "/contact/notre-universite.php", thus providing:
+  *  Friendly URLs
 
-Friendly URLs
 Files are also synchronized, so the whole web site can be stored on Google Docs and new files can be uploaded via a web browser:
+  *  Incremental backup of the entire site on the Google cloud
+  *  File upload with drag'n'drop, progress bar and multiple elements support
 
-Incremental backup of the entire site on the Google cloud
-File upload with drag'n'drop, progress bar and multiple elements support
-The Google Doc's file sharing can be used to share the GoogleCms? php code between all the powered sites:
+The Google Doc's file sharing can be used to share the GoogleCms php code between all the powered sites:
+  *  Auto-update of the CMS
 
-Auto-update of the CMS
+
+Setting up the example
+----------------------
+This section contains instructions on how to set up the example site.
+1) Upload all files from the src and the example folder to a googleCmsTester folder on your web server.
+2) Go to http://yourWebSite.com/example/googlecms.php
+3) The pages sould now be downloaded from the example Google Docs account to your web server, you can start browsing it from http://yourWebSite.com/example/.
+
+Starting from scratch
+---------------------
+Google Docs
+header.php/footer.php
+
+
+Security considerations
+-----------------------
 
 FAQ
 ---
