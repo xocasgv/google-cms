@@ -35,19 +35,19 @@ class FolderScanner {
 			if($type == 'application/atom+xml;type=feed') {
 				if(!is_dir($path)) {
 					$this->output->createFolder($path);
-					$this->output->sout("Folder: $path");
+					$this->output->println("Folder: $path");
 				}
 				// Recursively store the sub folder.
 				$foldersArray[$name.'!$!'] = $this->scan($srcUrl, $path);
 			} else if(substr($srcUrl, 0, strlen('https://docs.g')) == 'https://docs.g') {
 				$pagesArray[] = $name.'!$!'; // !$! is a end of name protectio removed in StringTools::serializeForInclude(), i know that's not very nice..
 				if($isNew || !file_exists($path.'.php')) {
-					$this->output->sout("Page: $path");
+					$this->output->println("Page: $path");
 					$this->pageDownloader->download($srcUrl, $etag, $path.'.php');
 				}
 			} else if($isNew || !file_exists($path)) {
 				$this->output->store($this->connection->getRequest($srcUrl), $path);
-				$this->output->sout("File: $path");
+				$this->output->println("File: $path");
 			}
 		}
 

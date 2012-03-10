@@ -2,14 +2,12 @@
 class PageDownloader {
 	private $connection;
 	private $output;
-	private $headerPath;
-	private $footerPath;
+	private $templatePath;
 	
-	public function __construct(Connection $connectionARG, Output $outputARG, $headerPathARG, $footerPathARG) {
+	public function __construct(Connection $connectionARG, Output $outputARG, $templatePathARG) {
 		$this->connection = $connectionARG;
 		$this->output = $outputARG;
-		$this->headerPath = (string) $headerPathARG;
-		$this->footerPath = (string) $footerPathARG;
+		$this->templatePath = (string) $templatePathARG;
 	}
 	
 	public function download($gdocUrl, $etag, $target) {
@@ -65,20 +63,22 @@ class PageDownloader {
 		// TODO: backup forumlas
 		// TODO: Correction of a bug that makes formulas not working.
 		
-		// Add $docid, include(header) and include(footer)
+		// Create the final page.php file with it's docid, etag, contentHtml and contentCss variable in addition to the include(templatePath) instruction.
 		$docid = substr(strstr($gdocUrl, '='), 1);
 		$pageString = <<<BIGSTRING
 <?php
 \$docid = '$docid';
 \$etag = '$etag';
-include('$this->headerPath');
-?>
-<style type="text/css">
-$css
-</style>
+
+\$contentHtml = <<<HTML
 $html
-<?php
-include('$this->footerPath');
+HTML;
+
+\$contentCss = <<<CSS
+$css
+CSS;
+
+include('$this->templatePath');
 ?>
 BIGSTRING;
 		$this->output->store($pageString, $target);
