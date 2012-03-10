@@ -8,6 +8,7 @@ src/PageDownloader:
 	
 src/GoogleCms:
 	display the page before checking for updates to get it asap
+	add "file sync" enabler flag
 
 doc:
 	Preface
