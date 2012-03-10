@@ -2,24 +2,24 @@
 class Output {
 	private $fileMode;
 	private $folderMode;
-	private $minFlushNeeded;
+	private $preFlushNeeded;
 	
 	public function __construct($fileModeARG, $folderModeARG) {
 		$this->fileMode = $fileModeARG;
 		$this->folderMode = $folderModeARG;
-		$this->minFlushNeeded = true;
+		$this->preFlushNeeded = true;
 	}
 	
-	// Print a String and a line break
-	// -------------------------------
-	public function sout($s) {
-		if($this->minFlushNeeded) {
-			// Minimum start for Safari flush
+	// Instantly print a String with a line break
+	// ------------------------------------------
+	public function println($s) {
+		if($this->preFlushNeeded) {
+			// Pre flush instruction needed for Safari 
 			echo str_pad('',1024);
-			$this->minFlushNeeded = false;
+			$this->preFlushNeeded = false;
 		}
 		echo $s."<br>\n";
-		flush(); // Display the page before the end of the script
+		flush();
 	}
 	
 	// Store string in a file with the appropriate permissions
