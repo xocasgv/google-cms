@@ -9,21 +9,12 @@ body {
 table, td, tr, ul, li {
 	font-size: 1em;
 }
-a, a:visited {
-	font-weight:bold;
-	color: #D82026;
-	text-decoration: none;
-}
-a:hover, a:visited:hover {
-	color: #042E48;
-	text-decoration: underline;
-}
 h1, h2, h3, h4, h5, h6 {
 	font-family: "Trebuchet MS", Verdana, sans-serif;
 	color: #D82026;
 }
 h1 {
-	font-size: 3em;
+	font-size: 2.5em;
 	font-weight: bold;
 	padding: 40px 0 20px 0;	
 }
@@ -94,19 +85,14 @@ img {
 	color: #FFE7AE;
 	text-decoration: underline;
 }
-#deco_menu {
-	background-image: url('../../-/fond.jpg');
-	background-repeat: no-repeat;
-}
 #corpus {
 	width: 520px;
-	min-height: 750px;
+	min-height: 800px;
 	padding: 0 0 0 40px;
 }
 #corpus p {
-	font-size: 1.3em;
-	line-height: 1.8em;
-	text-align: justify;
+	font-size: 1.1em;
+	line-height: 1.5em;
 	color: #042E48;
 }
 #footer {
@@ -117,12 +103,4 @@ img {
 	color: #FFE7AE ;
 	font-size: 0.8em;
 	line-height: 1.6em;
-}
-#footer a {
-	color: #042E48;
-	text-decoration: none;
-}
-#footer a:hover {
-	color: #FFE7AE;
-	text-decoration: none;
 }

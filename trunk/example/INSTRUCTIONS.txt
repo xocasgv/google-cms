@@ -1,1 +1,0 @@
-You can find instructions on how to setup this example on the documentation.
