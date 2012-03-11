@@ -70,15 +70,15 @@ class PageDownloader {
 \$docid = '$docid';
 \$etag = '$etag';
 
-\$contentHtml = <<<HTML
+\$html = <<<HTML
 $html
 HTML;
 
-\$contentCss = <<<CSS
+\$css = <<<CSS
 $css
 CSS;
 
-include('$this->templatePath');
+include_once('$this->templatePath');
 ?>
 BIGSTRING;
 		$this->output->store($pageString, $target);

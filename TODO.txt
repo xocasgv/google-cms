@@ -1,4 +1,4 @@
-example:
+example: Allmost done :-)
 	Setup an example site (gt2901351@gmail.com, gt2901351gt2901351)
 	Make a header/footer to show how to build a menu
 	Write instructions
