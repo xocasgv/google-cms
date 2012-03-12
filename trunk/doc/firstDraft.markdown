@@ -36,30 +36,16 @@ How it works
 GoogleCms is centred around Google Doc's text editor and file manager. The idea is to syncronise a Google Doc's folder with your webserver. Files are downloaded and Google Documents are turned into proper webpages. This webpages are stored as .php files with this layout:
 
 <?php
-    $contentHtml = '<h2 class="c1"><span>html content</span></h2>';
-    $contentCss = '.c1{someCss;}';
-    include('path/to/the/template.php');
+    $html = '<h2 class="c1"><span>html content</span></h2>';
+    $css = '.c1{someCss;}';
+    include_once('path/to/the/template.php');
 ?>
 
 This allows to use the template.php to assemble the pages as needed. In addition to this manualy trigged global synchronization there is also a page by page update check that's performed at each page load.
 
-<<<<<<< .mine
-Durring the synchronisation there is also the generation of a php tree representing the hierarchy of the Google Doc file system. This tree is ment to be used to generate the menu(s) in the header/footer.php.
-=======
 Durring the synchronization there is also the generation of a PHP tree representing the hierarchy of the Google Doc file system. This tree is accesible from the $menuTree variable and is ment to be used in the template.php to generate a menu.
->>>>>>> .r21
 
-There a Sandbox Google account (gt2901351@gmail.com pass: gt2901351gt2901351) that you can use to test out GoogleCms on your own server. To do so you need to upload the .php files in /example and /src in a single folder that will contain the entier test site. Then visit http://yoursite/whatever/googlecms.php from web browser. This will run a full synchronization: download all the demo pages on the webserver.
 
-<<<<<<< .mine
-You can then go to http://docs.google.com/ and play with "the CMS". As sayed befor all changes performed on an existing page will be instantly effective. If you want to upload files or add pages you will need 
-
-**Starting from scratch**   
-Google Docs
-header.php/footer.php
-
-=======
->>>>>>> .r21
 Features
 --------
 Despite its simplicity GoogleCms provides interesting features. Since Google Docs is used as a text editor we get:
@@ -91,10 +77,11 @@ The Google Doc's file sharing can be used to share the GoogleCms php code betwee
 
 Setting up the example
 ----------------------
-This section contains instructions on how to set up the example site.
-1) Upload all files from the src and the example folder to a googleCmsTester folder on your web server.
-2) Go to http://yourWebSite.com/example/googlecms.php
-3) The pages sould now be downloaded from the example Google Docs account to your web server, you can start browsing it from http://yourWebSite.com/example/.
+There a Sandbox Google account (gt2901351@gmail.com, pass: gt2901351gt2901351) that you can use to test out GoogleCms on your own server. To do so you need to upload the .php files in /example and /src to a single /demo folder. Then visit http://yoursite/example/googlecms.php from web browser, this will download all the pages to your webserver.
+
+You can then go to http://docs.google.com/, log and play with "the CMS". As sayed befor all changes performed on an existing page will be instantly effective. However if you want to add or rename pages you will need to revisit /demo/googlecms.php in order to make your changes effective.
+
+
 
 Starting from scratch
 ---------------------
