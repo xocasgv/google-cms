@@ -48,6 +48,7 @@ img {
 #menu {
 	float:right;
 	width: 300px;
+	min-height: 700px;
 	padding: 35px 0 0 0;
 	font-family: "Trebuchet MS", Verdana, sans-serif;
 	font-size: 1.3em;
@@ -55,7 +56,20 @@ img {
 	letter-spacing: 1px;
 	line-height: 1.5em;
 	color: #042E48;
-	background: #71929F;
+	
+	/* Source: http://gradients.glrzad.com/ */
+	background-image: linear-gradient(bottom, rgb(255,231,174) 0%, rgb(113,146,159) 100%);
+	background-image: -o-linear-gradient(bottom, rgb(255,231,174) 0%, rgb(113,146,159) 100%);
+	background-image: -moz-linear-gradient(bottom, rgb(255,231,174) 0%, rgb(113,146,159) 100%);
+	background-image: -webkit-linear-gradient(bottom, rgb(255,231,174) 0%, rgb(113,146,159) 100%);
+	background-image: -ms-linear-gradient(bottom, rgb(255,231,174) 0%, rgb(113,146,159) 100%);
+	background-image: -webkit-gradient(
+		linear,
+		left bottom,
+		left top,
+		color-stop(0, rgb(255,231,174)),
+		color-stop(1, rgb(113,146,159))
+	);
 }
 #menu h4 {
 	display: block;
