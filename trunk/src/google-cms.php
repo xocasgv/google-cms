@@ -1,97 +1,75 @@
-<?php
-error_reporting(E_ALL);
-require(dirname(__FILE__).'/config.php');
-// $login
-// $password
-// $rootFolderId
-// $templatePath
-// $rootPath
-// $folderMode
-// $fileMode
-
-// TODO: add to config.php
-// $lastUpdateDate
-// $authString
-// $menuTree
+<?php error_reporting(E_ALL);
+// $LOGIN
+// $PASSWORD
+// $ROOT_FOLDER_ID
+// $TEMPLATE_PATH
+// $ROOT_PATH
+// $FOLDER_MODE
+// $FILE_MODE
 
 Main::init();
 
 class Main {
-  public function init() {
-    // if (!defined('TEST')) {
-    // exit();}
-    
-    $output = new Output($fileMode, $folderMode);
-    $connection = new Connection($login, $password, $authString);
-
-    $visitingThisFile = (strrchr(__FILE__, '/')) === (strrchr($_SERVER['PHP_SELF'], '/'));
-    if($visitingThisFile) {
-    	$output->println('Start');
-    	date_default_timezone_set('GMT'); // this is the time used in google feeds
-    	$newUpdateDate = gmdate(substr(DateTime::ATOM, 0, -1), strtotime('-1 hour')); // -1 hour because of the feeds delay. 'Y-m-d\TH:i:s\Z'
-    	$rootFolderUrl = 'https://docs.google.com/feeds/default/private/full/folder%3A'.$rootFolderId.'/contents';
-    	$pageDownloader = new PageDownloader($connection, $output, $templatePath);
-    	$folderScanner = new FolderScanner($connection, $output, $lastUpdateDate, $pageDownloader);
-    	$menuTree = $folderScanner->scan($rootFolderUrl, $rootPath); // Publish all pages and files
-    	$newAuthString = $connection->getAuthString();
-    	$output->println('Done.');
-    	$privateString = StringTools::serializeForInclude($newUpdateDate, $newAuthString, $menuTree);
-    	$output->store($privateString, $privateFilePath);
-    } else { // The file is "included"
-    	// $docid
-    	// $etag
-    	$action = $_SERVER['QUERY_STRING'];
-    	if($action == 'edit' or $action == 'e') {
-    		header('Location: https://docs.google.com/document/d/'.$docid.'/edit');
-    	} else {
-    		$response = $connection->checkForUpdates('https://docs.google.com/feeds/default/private/full/document%3A'.$docid, $etag);
-    		$authStringGotUpdated = strcmp($authString, $connection->getAuthString()) != 0;
-    		if($authStringGotUpdated) {
-    			$privateString = StringTools::serializeForInclude($lastUpdateDate, $connection->getAuthString(), $menuTree);
-    			$output->store($privateString, $privateFilePath);
-    		}
-    		$pageChanged = strcmp($response, '304') != 0;
-    		if($pageChanged) {
-    			libxml_use_internal_errors(true);
-    			$responseContent = simplexml_load_string(str_replace('gd:etag', 'etag', $response));
-    			if(0 == count(libxml_get_errors())) {
-    				$newEtag = $responseContent['etag'];
-    				$srcUrl = $responseContent->content['src'];
-    				$pageDownloader = new PageDownloader($connection, $output, $templatePath);
-    				$pageDownloader->download($srcUrl, $newEtag, substr(strrchr($_SERVER['SCRIPT_NAME'], '/'), 1));
-    				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']);
-    			}
-    		}		
-    	}
-    }
-    $connection->close();    
+  public static function init() {
+		$configured = @include(dirname(__FILE__).'/config.php'); // TODO: add lastUpdateDate/LAST_AUTH_STRING/menuTree to config.php
+		if(!$configured) {
+			echo("There is no config.php file");
+			exit();
+		}
+		
+		echo str_pad('',1024); // Pre flush instruction needed for Safari
+		Connection::$authString = $LAST_AUTH_STRING;
+		$visitingThisFile = (strrchr(__FILE__, '/')) === (strrchr($_SERVER['PHP_SELF'], '/'));
+		if($visitingThisFile) {
+			self::globalRefresh();
+		} else { // The file is "included"
+			self::pageRefresh();
+		}
   }
 
-  private function pageRefresh() {
- 
+  private static function pageRefresh() {
+		// $docid
+  	// $etag
+  	$action = $_SERVER['QUERY_STRING'];
+  	if($action == 'edit' or $action == 'e') {
+  		header('Location: https://docs.google.com/document/d/'.$docid.'/edit');
+  	} else {
+  		$response = Connection::etagRequest('https://docs.google.com/feeds/default/private/full/document%3A'.$docid, $etag);
+  		$authStringGotUpdated = strcmp($authString, $connection->getAuthString()) != 0;
+  		if($authStringGotUpdated) {
+  			$privateString = StringTools::serializeForInclude($LAST_UPDATE_DATE, $connection->getAuthString(), $menuTree);
+  			Output::store($privateString, $privateFilePath);
+  		}
+  		$pageChanged = strcmp($response, '304') != 0;
+  		if($pageChanged) {
+  			libxml_use_internal_errors(true);
+  			$responseContent = simplexml_load_string(str_replace('gd:etag', 'etag', $response));
+  			if(0 == count(libxml_get_errors())) {
+  				$newEtag = $responseContent['etag'];
+  				$srcUrl = $responseContent->content['src'];
+  				PageDownloader::download($srcUrl, $newEtag, substr(strrchr($_SERVER['SCRIPT_NAME'], '/'), 1));
+  				// TODO: header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']);
+  			}
+  		}
+  	}
   }
   
-  private function globalRefresh() {
- 
-  }  
+  private static function globalRefresh() {
+		Output::println('Start');
+  	date_default_timezone_set('GMT'); // this is the time used in google feeds
+  	$newUpdateDate = gmdate(substr(DateTime::ATOM, 0, -1), strtotime('-1 hour')); // -1 hour because of the feeds delay.
+  	$rootFolderUrl = 'https://docs.google.com/feeds/default/private/full/folder%3A'.$ROOT_FOLDER_ID.'/contents';
+  	$menuTree = FolderScanner::scan($rootFolderUrl, $ROOT_PATH); // Publish all pages and files
+  	$newAuthString = Connection::$authString;
+  	Output::println('Done.');
+  	$privateString = StringTools::serializeForInclude($newUpdateDate, $newAuthString, $menuTree);
+  	Output::store($privateString, $privateFilePath);
+  }
 }
 
 class FolderScanner {
-	private $connection;
-	private $lastUpdateDate;
-	private $output;
-	private $pageDownloader;
-
-	public function __construct(Connection $connectionARG, Output $outputARG, $lastUpdateDateARG, PageDownloader $pageDownloaderARG) {
-		$this->connection = $connectionARG;
-		$this->lastUpdateDate = (string) $lastUpdateDateARG;
-		$this->output = $outputARG;
-		$this->pageDownloader = $pageDownloaderARG;
-	}
-
 	// Scan a folder recursively and download new objects
-	// --------------------------------------------------
-	public function scan($url, $currentFolderDepth) {
+	public static function scan($url, $currentFolderDepth) {
 		// debug : echo getRequest("https://docs.google.com/feeds/default/private/full?prettyprint=true");
 		$folderContent = simplexml_load_string(str_replace('gd:etag', 'etag', $this->connection->getRequest($url))); //."?prettyprint=true"
 		$foldersArray = array();
@@ -111,20 +89,20 @@ class FolderScanner {
 
 			if($type == 'application/atom+xml;type=feed') {
 				if(!is_dir($path)) {
-					$this->output->createFolder($path);
-					$this->output->println("Folder: $path");
+					Output::createFolder($path);
+					Output::println("Folder: $path");
 				}
 				// Recursively store the sub folder.
 				$foldersArray[$name.'!$!'] = $this->scan($srcUrl, $path);
 			} else if(substr($srcUrl, 0, strlen('https://docs.g')) == 'https://docs.g') {
 				$pagesArray[] = $name.'!$!'; // !$! is a end of name protectio removed in StringTools::serializeForInclude(), i know that's not very nice..
 				if($isNew || !file_exists($path.'.php')) {
-					$this->output->println("Page: $path");
+					Output::println("Page: $path");
 					$this->pageDownloader->download($srcUrl, $etag, $path.'.php');
 				}
 			} else if($isNew || !file_exists($path)) {
-				$this->output->store($this->connection->getRequest($srcUrl), $path);
-				$this->output->println("File: $path");
+				Output::store($this->connection->getRequest($srcUrl), $path);
+				Output::println("File: $path");
 			}
 		}
 
@@ -148,17 +126,7 @@ class FolderScanner {
 }
 
 class PageDownloader {
-	private $connection;
-	private $output;
-	private $templatePath;
-	
-	public function __construct(Connection $connectionARG, Output $outputARG, $templatePathARG) {
-		$this->connection = $connectionARG;
-		$this->output = $outputARG;
-		$this->templatePath = (string) $templatePathARG;
-	}
-	
-	public function download($gdocUrl, $etag, $target) {
+	public static function download($gdocUrl, $etag, $target) {
 		$content = $this->connection->getRequest($gdocUrl);
 		
 		$tagCssStart = '<style type="text/css">';
@@ -229,75 +197,56 @@ CSS;
 include_once('$this->templatePath');
 ?>
 BIGSTRING;
-		$this->output->store($pageString, $target);
+		Output::store($pageString, $target);
 	}
 }
 
 class Connection {
-	private $curl;
-	private $headers;
-	
-	// Initialize the curl object
-	public function __construct($authStringARG) {
-		$this->authString = (string) $authStringARG;
-		$this->curl = curl_init();
-		// Include the Auth string in the headers
-		// Together with the API version being used
-		$this->headers = array(
-		    "Authorization: GoogleLogin auth=" . $this->authString,
-		    "GData-Version: 3.0",
-		);
-		curl_setopt($this->curl, CURLOPT_HTTPHEADER, $this->headers);
-		curl_setopt($this->curl, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
-		curl_setopt($this->curl, CURLOPT_POST, false);
-		curl_setopt($this->curl, CURLOPT_SSL_VERIFYPEER, false);
-		curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, true);
-	}
+	public static $authString;
 	
 	// Perform an authentified http GET request to the given url
-	// if response is "Token invalid" refresh the authString() make the request again
-	public function getRequest($url) {
-		// Make the request
-		curl_setopt($this->curl, CURLOPT_URL, $url);
-		$response = curl_exec($this->curl);
+	public static function getRequest($url) {
+		$headers = array("Authorization: GoogleLogin auth=".self::$authString, "GData-Version: 3.0");
+		$response = self::get($url, $headers)
 		
-		// If the authString is out of date (each 2 weeks)  strlen($response) < 1000 and 
+		// If the authString is out of date (each 2 weeks) or invalid, get another one and make the request a second time.
 		if (strpos($response, "<H1>Token invalid</H1>") or strpos($response, "<H1>Token expired</H1>")) {
-			// Get another one and make the request a second time
-			$this->refreshAuthString();
-			curl_setopt($this->curl, CURLOPT_URL, $url);
-			$response = curl_exec($this->curl);
-			// If we stil get an error, display "Login failed" and die
+			self::refreshAuthString();
+			$headers = array("Authorization: GoogleLogin auth=".self::$authString, "GData-Version: 3.0");
+			$response = self::get($url, $headers)
+
 			if (strpos($response, "<H1>Token invalid</H1>") or strpos($response, "<H1>Token expired</H1>")) {
 				echo "<H1>Login failed</H1><BR>".$response;
-				exit(-1);
-				// Be carefull, after a few attempts google ask for captcha (not supported)
+				exit(-1); // Be carefull, after a few attempts google ask for captcha (not supported)
 			}
 		}
+		
+		return $response;
+	}
+	
+	public static function etagRequest($url, $etag) {
+		$headers = array("Authorization: GoogleLogin auth=".self::$authString, "GData-Version: 3.0", 'If-None-Match: '.$etag);
+		return self::get($url, $headers);
+	}
+	
+	private static function get($url, $headers) {
+		$curl = curl_init();
+		curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+		curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+		curl_setopt($curl, CURLOPT_POST, false);
+		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($curl, CURLOPT_URL, $url);
+		$response = curl_exec($curl);
 		if($response == "") {
-			return curl_getinfo($this->curl, CURLINFO_HTTP_CODE); // ex: 404
-		} else {
-			return $response;
+			$response = curl_getinfo($curl, CURLINFO_HTTP_CODE); // ex: 404
 		}
+		curl_close($curl);
+		return $response;
 	}
 	
-	// Return true if the page has been modified
-	public function checkForUpdates($url, $etag) {
-		$this->headers[] = 'If-None-Match: '.$etag;
-		curl_setopt($this->curl, CURLOPT_HTTPHEADER, $this->headers);
-		return $this->getRequest($url);
-	}
-
-	public function close() {
-		curl_close($this->curl);
-	}
-	
-	public function getAuthString() {
-		return $this->authString;
-	}
-	
-	private function refreshAuthString() {
-		$tempCurl = curl_init();
+	private static function refreshAuthString() {
+		$curl = curl_init();
 		$clientloginUrl = "https://www.google.com/accounts/ClientLogin";
 		$clientloginPost = array(
 		    "accountType" => "HOSTED_OR_GOOGLE",
@@ -306,50 +255,37 @@ class Connection {
 		    "service" => "writely", // the "Google Documents List Data AP" service name
 		    "source" => "GoogleCms 3beta"
 		);
-		curl_setopt($tempCurl, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
-		curl_setopt($tempCurl, CURLOPT_SSL_VERIFYPEER, false);
-		curl_setopt($tempCurl, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($tempCurl, CURLOPT_URL, $clientloginUrl);
-		curl_setopt($tempCurl, CURLOPT_POST, true);
-		curl_setopt($tempCurl, CURLOPT_POSTFIELDS, $clientloginPost);
-
-		$response = curl_exec($tempCurl);
-		curl_close($tempCurl);
+		curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($curl, CURLOPT_URL, $clientloginUrl);
+		curl_setopt($curl, CURLOPT_POST, true);
+		curl_setopt($curl, CURLOPT_POSTFIELDS, $clientloginPost);
+		$response = curl_exec($curl);
+		curl_close($curl);
 
 		preg_match("/Auth=([a-z0-9_\-]+)/i", $response, $matches);
-		$this->authString = $matches[1];
-		$this->headers = array(
-		    "Authorization: GoogleLogin auth=" . $this->authString,
-		    "GData-Version: 3.0",
-		);
-		curl_setopt($this->curl, CURLOPT_HTTPHEADER, $this->headers);
+		self::authString = $matches[1];
 	}
 }
 
 class Output {
-	private $preFlushNeeded = true;
-	
-	// Instantly print a String with a line break
-	public function println($s) {
-		if($this->preFlushNeeded) {
-			// Pre flush instruction needed for Safari 
-			echo str_pad('',1024);
-			$this->preFlushNeeded = false;
-		}
+	// Print a String with a line break and flush the page.
+	public static function println($s) {
 		echo $s."<br>\n";
 		flush();
 	}
 	
 	// Store string in a file with the appropriate permissions
-	public function store($string, $target) {
-		$fp = fopen($target, "w");
-		fwrite($fp, $string);
-		fclose($fp);
+	public static function store($string, $target) {
+		file_put_contents($target, $string);
+		// $fp = fopen($target, "w");
+		// fwrite($fp, $string);
+		// fclose($fp);
 		@chmod($target, $FILE_MODE);
 	}
 	
-	// Create a folder with the appropriate permissions
-	public function createFolder($path) {
+	public static function createFolder($path) {
 		mkdir($path, $FOLDER_MODE);		
 	}
 }
