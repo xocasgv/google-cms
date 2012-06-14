@@ -1,24 +1,26 @@
 <?php error_reporting(E_ALL);
-// $LOGIN
-// $PASSWORD
-// $ROOT_FOLDER_ID
-// $TEMPLATE_PATH
-// $ROOT_PATH
-// $FOLDER_MODE
-// $FILE_MODE
+// TODO: use __DIR__ to make template path absolut
 
+include(dirname(__FILE__).'/config.php');
 Main::init();
 
 class Main {
   public static function init() {
-		$configured = @include(dirname(__FILE__).'/config.php'); // TODO: add lastUpdateDate/LAST_AUTH_STRING/menuTree to config.php
+		$configured = true;
 		if(!$configured) {
 			echo("There is no config.php file");
+			// LOGIN
+			// PASSWORD
+			// ROOT_FOLDER_ID
+			// TEMPLATE_PATH
+			// ROOT_PATH
+			// FOLDER_MODE
+			// FILE_MODE
 			exit();
 		}
 		
-		echo str_pad('',1024); // Pre flush instruction needed for Safari
-		Connection::$authString = $LAST_AUTH_STRING;
+		echo str_pad('', 1024); // Pre flush instruction needed for Safari
+		Connection::$authString = LAST_AUTH_STRING;
 		$visitingThisFile = (strrchr(__FILE__, '/')) === (strrchr($_SERVER['PHP_SELF'], '/'));
 		if($visitingThisFile) {
 			self::globalRefresh();
@@ -28,20 +30,20 @@ class Main {
   }
 
   private static function pageRefresh() {
-		// $docid
-  	// $etag
+		global $docid, $etag; // google-cms.php is included from an executing page.php where this variables should be declared.
   	$action = $_SERVER['QUERY_STRING'];
   	if($action == 'edit' or $action == 'e') {
-  		header('Location: https://docs.google.com/document/d/'.$docid.'/edit');
-  	} else {
+  		// TODO: header('Location: https://docs.google.com/document/d/'.$docid.'/edit');
+  	} else { // TODO: http://php.net/manual/en/function.register-shutdown-function.php
   		$response = Connection::etagRequest('https://docs.google.com/feeds/default/private/full/document%3A'.$docid, $etag);
-  		$authStringGotUpdated = strcmp($authString, $connection->getAuthString()) != 0;
-  		if($authStringGotUpdated) {
-  			$privateString = StringTools::serializeForInclude($LAST_UPDATE_DATE, $connection->getAuthString(), $menuTree);
-  			Output::store($privateString, $privateFilePath);
+  		$isAuthStringUpdated = strcmp(LAST_AUTH_STRING, Connection::$authString) != 0;
+  		if($isAuthStringUpdated) {
+  			$privateString = StringTools::serializeForInclude(LAST_UPDATE_DATE, Connection::$authString, MENU);
+  			// TODO: inconfig.php Output::store($privateString, $privateFilePath);
+ 				// add LAST_UPDATE_DATE/LAST_AUTH_STRING/MENU
   		}
-  		$pageChanged = strcmp($response, '304') != 0;
-  		if($pageChanged) {
+  		$isPageUpdated = strcmp($response, '304') != 0;
+  		if($isPageUpdated) {
   			libxml_use_internal_errors(true);
   			$responseContent = simplexml_load_string(str_replace('gd:etag', 'etag', $response));
   			if(0 == count(libxml_get_errors())) {
@@ -58,12 +60,13 @@ class Main {
 		Output::println('Start');
   	date_default_timezone_set('GMT'); // this is the time used in google feeds
   	$newUpdateDate = gmdate(substr(DateTime::ATOM, 0, -1), strtotime('-1 hour')); // -1 hour because of the feeds delay.
-  	$rootFolderUrl = 'https://docs.google.com/feeds/default/private/full/folder%3A'.$ROOT_FOLDER_ID.'/contents';
-  	$menuTree = FolderScanner::scan($rootFolderUrl, $ROOT_PATH); // Publish all pages and files
+  	$rootFolderUrl = 'https://docs.google.com/feeds/default/private/full/folder%3A'.ROOT_FOLDER_ID.'/contents';
+  	$menuTree = FolderScanner::scan($rootFolderUrl, ROOT_PATH); // Publish all pages and files
   	$newAuthString = Connection::$authString;
   	Output::println('Done.');
   	$privateString = StringTools::serializeForInclude($newUpdateDate, $newAuthString, $menuTree);
-  	Output::store($privateString, $privateFilePath);
+  	// TODO: inconfig.php Output::store($privateString, $privateFilePath);
+		// add LAST_UPDATE_DATE/LAST_AUTH_STRING/MENU
   }
 }
 
@@ -71,21 +74,22 @@ class FolderScanner {
 	// Scan a folder recursively and download new objects
 	public static function scan($url, $currentFolderDepth) {
 		// debug : echo getRequest("https://docs.google.com/feeds/default/private/full?prettyprint=true");
-		$folderContent = simplexml_load_string(str_replace('gd:etag', 'etag', $this->connection->getRequest($url))); //."?prettyprint=true"
+		$result = Connection::getRequest($url); //."?prettyprint=true"
+		$folderContent = simplexml_load_string(str_replace('gd:etag', 'etag', $result));
 		$foldersArray = array();
 		$pagesArray = array();
 
 		// foldersArray: key:name => value:sub-folder
 		// pagesArray: key:menu_position => value:name
 		foreach($folderContent->entry as $file) {
-			$type = (string)($file->content['type']);
-			$name = (string)($file->title);
+			$type = (string) ($file->content['type']);
+			$name = (string) ($file->title);
 			$name = str_replace('"', '\"', str_replace('$', '\$', $name));
-			$srcUrl = (string)($file->content['src']);
-			$lastModified = (string)($file->updated);
-			$etag = (string)($file['etag']);
+			$srcUrl = (string) ($file->content['src']);
+			$lastModified = (string) ($file->updated);
+			$etag = (string) ($file['etag']);
 			$path = $currentFolderDepth.($currentFolderDepth == '' ? '' : '/').StringTools::urlFormat(StringTools::indexClean($name));
-			$isNew = $this->lastUpdateDate < $lastModified;
+			$isNew = LAST_UPDATE_DATE < $lastModified;
 
 			if($type == 'application/atom+xml;type=feed') {
 				if(!is_dir($path)) {
@@ -93,15 +97,15 @@ class FolderScanner {
 					Output::println("Folder: $path");
 				}
 				// Recursively store the sub folder.
-				$foldersArray[$name.'!$!'] = $this->scan($srcUrl, $path);
+				$foldersArray[$name.'!$!'] = self::scan($srcUrl, $path);
 			} else if(substr($srcUrl, 0, strlen('https://docs.g')) == 'https://docs.g') {
 				$pagesArray[] = $name.'!$!'; // !$! is a end of name protectio removed in StringTools::serializeForInclude(), i know that's not very nice..
-				if($isNew || !file_exists($path.'.php')) {
+				// if($isNew || !file_exists($path.'.php')) { TODO: keep?
 					Output::println("Page: $path");
-					$this->pageDownloader->download($srcUrl, $etag, $path.'.php');
-				}
+					PageDownloader::download($srcUrl, $etag, $path.'.php');
+				// }
 			} else if($isNew || !file_exists($path)) {
-				Output::store($this->connection->getRequest($srcUrl), $path);
+				Output::store(Connection::getRequest($srcUrl), $path);
 				Output::println("File: $path");
 			}
 		}
@@ -127,7 +131,7 @@ class FolderScanner {
 
 class PageDownloader {
 	public static function download($gdocUrl, $etag, $target) {
-		$content = $this->connection->getRequest($gdocUrl);
+		$content = Connection::getRequest($gdocUrl);
 		
 		$tagCssStart = '<style type="text/css">';
 		$tagCssEnd = '</style></head><body';
@@ -179,8 +183,9 @@ class PageDownloader {
 		// TODO: backup forumlas
 		// TODO: Correction of a bug that makes formulas not working.
 		
-		// Create the final page.php file with it's docid, etag, contentHtml and contentCss variable in addition to the include(templatePath) instruction.
+		// Create the final page.php file with it's docid, etag, contentHtml and contentCss variable in addition to the include('TEMPLATE_PATH') instruction.
 		$docid = substr(strstr($gdocUrl, '='), 1);
+		$templatePath = TEMPLATE_PATH;
 		$pageString = <<<BIGSTRING
 <?php
 \$docid = '$docid';
@@ -194,7 +199,7 @@ HTML;
 $css
 CSS;
 
-include_once('$this->templatePath');
+include_once('$templatePath');
 ?>
 BIGSTRING;
 		Output::store($pageString, $target);
@@ -207,13 +212,13 @@ class Connection {
 	// Perform an authentified http GET request to the given url
 	public static function getRequest($url) {
 		$headers = array("Authorization: GoogleLogin auth=".self::$authString, "GData-Version: 3.0");
-		$response = self::get($url, $headers)
+		$response = self::get($url, $headers);
 		
 		// If the authString is out of date (each 2 weeks) or invalid, get another one and make the request a second time.
 		if (strpos($response, "<H1>Token invalid</H1>") or strpos($response, "<H1>Token expired</H1>")) {
 			self::refreshAuthString();
 			$headers = array("Authorization: GoogleLogin auth=".self::$authString, "GData-Version: 3.0");
-			$response = self::get($url, $headers)
+			$response = self::get($url, $headers);
 
 			if (strpos($response, "<H1>Token invalid</H1>") or strpos($response, "<H1>Token expired</H1>")) {
 				echo "<H1>Login failed</H1><BR>".$response;
@@ -250,8 +255,8 @@ class Connection {
 		$clientloginUrl = "https://www.google.com/accounts/ClientLogin";
 		$clientloginPost = array(
 		    "accountType" => "HOSTED_OR_GOOGLE",
-		    "Email" => $LOGIN,
-		    "Passwd" => $PASSWORD,
+		    "Email" => LOGIN,
+		    "Passwd" => PASSWORD,
 		    "service" => "writely", // the "Google Documents List Data AP" service name
 		    "source" => "GoogleCms 3beta"
 		);
@@ -265,7 +270,7 @@ class Connection {
 		curl_close($curl);
 
 		preg_match("/Auth=([a-z0-9_\-]+)/i", $response, $matches);
-		self::authString = $matches[1];
+		self::$authString = $matches[1];
 	}
 }
 
@@ -278,15 +283,18 @@ class Output {
 	
 	// Store string in a file with the appropriate permissions
 	public static function store($string, $target) {
+		// TODO: error handling
+		// if (!is_dir($imageDir) or !is_writable($imageDir)) {
+		//     // Error if directory doesn't exist or isn't writable.
+		// } elseif (is_file($imagePath) and !is_writable($imagePath)) {
+		//     // Error if the file exists and isn't writable.
+		// }
 		file_put_contents($target, $string);
-		// $fp = fopen($target, "w");
-		// fwrite($fp, $string);
-		// fclose($fp);
-		@chmod($target, $FILE_MODE);
+		chmod($target, FILE_MODE);
 	}
 	
 	public static function createFolder($path) {
-		mkdir($path, $FOLDER_MODE);		
+		mkdir($path, FOLDER_MODE);		
 	}
 }
 
@@ -304,8 +312,7 @@ class StringTools {
 	
 	// Format a text for URL (special UTF-8). Dots are not removed. Source: http://goo.gl/Guqk3
 	public static function urlFormat($string) {
-	  $string = mb_strtolower($string, 'UTF-8');
-    $string = str_replace(
+    return str_replace(
         array(
             'à', 'â', 'ä', 'á', 'ã', 'å', 'ß', "à", "á",
             'î', 'ï', 'ì', 'í', "ì", "í",
@@ -326,9 +333,8 @@ class StringTools {
             '', '', '', '', '', '', '', '', '-',
             '-', '-', '-', '-', '-', '-', '-', '-', '-', '-',
         ),
-        $string
+        mb_strtolower($string, 'UTF-8')
     );
-    return $string;
 	}
 
 	// Serialize arguments as a php file "ready for include"
