@@ -1,12 +1,4 @@
-example: Allmost done :-)
-	Setup an example site (gt2901351@gmail.com, gt2901351gt2901351)
-	Write instructions
-
 src/PageDownloader:
 	backup images/drawings/forumlas (with an option in config.php?)
-	
-src/GoogleCms:
-	display the page before checking for updates to get it asap
-	add "file sync" enabler flag
 
 doc...
