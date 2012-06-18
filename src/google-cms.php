@@ -1,5 +1,6 @@
 <?php error_reporting(E_ALL);
-// TODO: use __DIR__ to make template path absolut
+
+// "https://docs.google.com/document/d/$docid/edit"
 
 include(dirname(__FILE__).'/config.php');
 Main::init();
@@ -9,13 +10,6 @@ class Main {
 		$configured = true;
 		if(!$configured) {
 			echo("There is no config.php file");
-			// LOGIN
-			// PASSWORD
-			// ROOT_FOLDER_ID
-			// TEMPLATE_PATH
-			// ROOT_PATH
-			// FOLDER_MODE
-			// FILE_MODE
 			exit();
 		}
 		
@@ -25,35 +19,31 @@ class Main {
 		if($visitingThisFile) {
 			self::globalRefresh();
 		} else { // The file is "included"
-			self::pageRefresh();
+			register_shutdown_function('Main::pageRefresh');
 		}
   }
 
-  private static function pageRefresh() {
+  public static function pageRefresh() {
+		flush();
+
 		global $docid, $etag; // google-cms.php is included from an executing page.php where this variables should be declared.
-  	$action = $_SERVER['QUERY_STRING'];
-  	if($action == 'edit' or $action == 'e') {
-  		// TODO: header('Location: https://docs.google.com/document/d/'.$docid.'/edit');
-  	} else { // TODO: http://php.net/manual/en/function.register-shutdown-function.php
-  		$response = Connection::etagRequest('https://docs.google.com/feeds/default/private/full/document%3A'.$docid, $etag);
-  		$isAuthStringUpdated = strcmp(LAST_AUTH_STRING, Connection::$authString) != 0;
-  		if($isAuthStringUpdated) {
-  			$privateString = StringTools::serializeForInclude(LAST_UPDATE_DATE, Connection::$authString, MENU);
-  			// TODO: inconfig.php Output::store($privateString, $privateFilePath);
- 				// add LAST_UPDATE_DATE/LAST_AUTH_STRING/MENU
-  		}
-  		$isPageUpdated = strcmp($response, '304') != 0;
-  		if($isPageUpdated) {
-  			libxml_use_internal_errors(true);
-  			$responseContent = simplexml_load_string(str_replace('gd:etag', 'etag', $response));
-  			if(0 == count(libxml_get_errors())) {
-  				$newEtag = $responseContent['etag'];
-  				$srcUrl = $responseContent->content['src'];
-  				PageDownloader::download($srcUrl, $newEtag, substr(strrchr($_SERVER['SCRIPT_NAME'], '/'), 1));
-  				// TODO: header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']);
-  			}
-  		}
-  	}
+		$response = Connection::etagRequest('https://docs.google.com/feeds/default/private/full/document%3A'.$docid, $etag);
+ 		$isAuthStringUpdated = strcmp(LAST_AUTH_STRING, Connection::$authString) != 0;
+ 		if($isAuthStringUpdated) {
+ 			$configPhpString = StringTools::serializeForInclude(LAST_UPDATE_DATE, MENU);
+			Output::store($configPhpString, __DIR__ . '/config.php');
+ 		}
+ 		$isPageUpdated = strcmp($response, '304') != 0;
+ 		if($isPageUpdated) {
+ 			libxml_use_internal_errors(true);
+ 			$responseContent = simplexml_load_string(str_replace('gd:etag', 'etag', $response));
+ 			if(0 == count(libxml_get_errors())) {
+ 				$newEtag = $responseContent['etag'];
+ 				$srcUrl = $responseContent->content['src'];
+ 				PageDownloader::download($srcUrl, $newEtag, $_SERVER['SCRIPT_FILENAME']);
+ 				Output::refresh();
+ 			}
+ 		}
   }
   
   private static function globalRefresh() {
@@ -62,11 +52,9 @@ class Main {
   	$newUpdateDate = gmdate(substr(DateTime::ATOM, 0, -1), strtotime('-1 hour')); // -1 hour because of the feeds delay.
   	$rootFolderUrl = 'https://docs.google.com/feeds/default/private/full/folder%3A'.ROOT_FOLDER_ID.'/contents';
   	$menuTree = FolderScanner::scan($rootFolderUrl, ROOT_PATH); // Publish all pages and files
-  	$newAuthString = Connection::$authString;
   	Output::println('Done.');
-  	$privateString = StringTools::serializeForInclude($newUpdateDate, $newAuthString, $menuTree);
-  	// TODO: inconfig.php Output::store($privateString, $privateFilePath);
-		// add LAST_UPDATE_DATE/LAST_AUTH_STRING/MENU
+  	$configPhpString = StringTools::serializeForInclude($newUpdateDate, $menuTree);
+		Output::store($configPhpString, __DIR__ . '/config.php');
   }
 }
 
@@ -96,14 +84,11 @@ class FolderScanner {
 					Output::createFolder($path);
 					Output::println("Folder: $path");
 				}
-				// Recursively store the sub folder.
-				$foldersArray[$name.'!$!'] = self::scan($srcUrl, $path);
+				$foldersArray[$name.'!$!'] = self::scan($srcUrl, $path); // Recursively store the sub folder.
 			} else if(substr($srcUrl, 0, strlen('https://docs.g')) == 'https://docs.g') {
-				$pagesArray[] = $name.'!$!'; // !$! is a end of name protectio removed in StringTools::serializeForInclude(), i know that's not very nice..
-				// if($isNew || !file_exists($path.'.php')) { TODO: keep?
-					Output::println("Page: $path");
-					PageDownloader::download($srcUrl, $etag, $path.'.php');
-				// }
+				$pagesArray[] = $name.'!$!'; // !$! is a end of name protection. It's removed in StringTools::serializeForInclude()
+				Output::println("Page: $path");
+				PageDownloader::download($srcUrl, $etag, $path.'.php');
 			} else if($isNew || !file_exists($path)) {
 				Output::store(Connection::getRequest($srcUrl), $path);
 				Output::println("File: $path");
@@ -149,8 +134,7 @@ class PageDownloader {
 		$html = substr($content, $fromPos, $toPos - $fromPos);
 		$html = substr($html, strpos($html, '>') + 1); // Removes the end of <body class="??">
 		
-		// ROT13 mail anti-spam
-		// example: <a href="mailto:toto@gmail.com">contact</a>
+		// ROT13 mail anti-spam.
 		$fromPos = @strpos($html, '<a href="mailto:');
 		$toPos = @strpos($html, '</a>', $fromPos);
 		while($fromPos != 0 and $toPos != 0) {
@@ -178,15 +162,12 @@ class PageDownloader {
 		}
 		$css = $miniCss;
 		
-		// TODO: backup images
-		// TODO: backup drawings
-		// TODO: backup forumlas
-		// TODO: Correction of a bug that makes formulas not working.
+		// TODO: backup images, drawings, forumlas
 		
-		// Create the final page.php file with it's docid, etag, contentHtml and contentCss variable in addition to the include('TEMPLATE_PATH') instruction.
+		// Create the final page.php file with it's docid, etag, contentHtml and contentCss variable in addition to the include('absoluteTemplatePath') instruction.
 		$docid = substr(strstr($gdocUrl, '='), 1);
-		$templatePath = TEMPLATE_PATH;
-		$pageString = <<<BIGSTRING
+		$templatePath = __DIR__ . '/template.php';
+		$pageString = <<<EOD
 <?php
 \$docid = '$docid';
 \$etag = '$etag';
@@ -201,7 +182,7 @@ CSS;
 
 include_once('$templatePath');
 ?>
-BIGSTRING;
+EOD;
 		Output::store($pageString, $target);
 	}
 }
@@ -275,13 +256,16 @@ class Connection {
 }
 
 class Output {
-	// Print a String with a line break and flush the page.
 	public static function println($s) {
 		echo $s."<br>\n";
 		flush();
 	}
+		
+	public static function refresh() {
+		$url = 'http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'].'?';
+		echo '<script>window.onload = function() { window.location.href = "'.$url.'"; };</script>';
+	}
 	
-	// Store string in a file with the appropriate permissions
 	public static function store($string, $target) {
 		// TODO: error handling
 		// if (!is_dir($imageDir) or !is_writable($imageDir)) {
@@ -290,16 +274,15 @@ class Output {
 		//     // Error if the file exists and isn't writable.
 		// }
 		file_put_contents($target, $string);
-		chmod($target, FILE_MODE);
+		chmod($target, fileperms(__FILE__));
 	}
 	
 	public static function createFolder($path) {
-		mkdir($path, FOLDER_MODE);		
+		mkdir($path, fileperms(__DIR__));
 	}
 }
 
 class StringTools {
-	// Clean the index of a string if it exists
 	public static function indexClean($string) {
 		if($string[0] >= '0' and $string[0] <= '9') {
 			$clean = trim(strstr($string, ' '));
@@ -337,24 +320,33 @@ class StringTools {
     );
 	}
 
-	// Serialize arguments as a php file "ready for include"
-	public static function serializeForInclude($lastUpdateDate, $authString, $menuTree) {
-		$mts = str_replace(
+	public static function serializeForInclude($lastUpdateDate, $menuTree) {
+	  $serialisedMenu = str_replace(
 			array( "] => ",	"[", "\n\n",	"\n",		'"Array",',	'(",', ')",',	'!$!'	),
 			array( '" => "', '"', "\n",		"\",\n",	"Array",	"(", "),",		''		),
 			print_r($menuTree, true)
 		);
-		if(strlen($mts) == 0)
-			$mts = 'Array()';
+		if(strlen($serialisedMenu) == 0)
+			$serialisedMenu = '()';
 		else
-			$mts = 'Array'.substr($mts, 8, -2);
-		return <<<BIGSTRING
+			$serialisedMenu = substr($serialisedMenu, 8, -2);
+		$login = LOGIN;
+		$password = PASSWORD;
+		$rootFolderId = ROOT_FOLDER_ID;
+		$rootPath = ROOT_PATH;
+		$lastAuthString = Connection::$authString;
+		return <<<EOD
 <?php
-\$lastUpdateDate = "$lastUpdateDate";
-\$authString = "$authString";
-\$menuTree = $mts;
+define("LOGIN", "$login");
+define("PASSWORD", "$password");
+define("ROOT_FOLDER_ID", "$rootFolderId");
+
+define("ROOT_PATH", "$rootPath");
+define("LAST_UPDATE_DATE", "$lastUpdateDate");
+define("LAST_AUTH_STRING", "$lastAuthString");
+\$MENU = Array$serialisedMenu;
 ?>
-BIGSTRING;
+EOD;
 	}
 }
 
