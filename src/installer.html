@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>google-cms &rsaquo; Setup Configuration File</title>
+<style type="text/css">
+html {
+	background: #f9f9f9
+}
+body {
+	background: #fff;
+	color: #333;
+	font-family: sans-serif;
+	margin: 2em auto;
+	padding: 1em 2em;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	border: 1px solid #dfdfdf;
+	max-width: 700px
+}
+a {
+	color: #21759b;
+	text-decoration: none
+}
+a:hover {
+	color: #d54e21
+}
+h1 {
+	border-bottom: 1px solid #dadada;
+	clear: both;
+	color: #666;
+	font: 24px Georgia,"Times New Roman",Times,serif;
+	margin: 30px 0 0 0;
+	padding: 0;
+	padding-bottom: 7px
+}
+/*h2 {
+	font-size: 16px
+}*/
+p,li,dd,dt {
+	padding-bottom: 2px;
+	font-size: 14px;
+	line-height: 1.5
+}
+/*code,.code {
+	font-size: 14px
+}
+ul,ol,dl {
+	padding: 5px 5px 5px 22px
+}
+a img {
+	border: 0
+}
+abbr {
+	border: 0;
+	font-variant: normal
+}*/
+#logo {
+	font-family: arial, sans-serif;
+	font-size: 300%;
+	font-weight: 400;
+	text-align: center;
+	margin: 6px 0 20px;
+	border-bottom: 0px;
+}
+/*.step {
+	margin: 20px 0 15px
+}
+.step,th {
+	text-align: left;
+	padding: 0
+}
+textarea {
+	border: 1px solid #dfdfdf;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	font-family: sans-serif;
+	width: 695px
+}*/
+.form-table {
+	border-collapse: collapse;
+	margin-top: 1em;
+	width: 100%
+}
+.form-table td {
+	margin-bottom: 9px;
+	padding: 10px 20px 10px 0;
+	border-bottom: 8px solid #fff;
+	font-size: 14px;
+	vertical-align: top
+}
+.form-table th {
+	font-size: 14px;
+	text-align: left;
+	padding: 16px 20px 10px 0;
+	border-bottom: 8px solid #fff;
+	width: 140px;
+	vertical-align: top
+}
+/*.form-table code {
+	line-height: 18px;
+	font-size: 14px
+}*/
+.form-table p {
+	margin: 4px 0 0 0;
+	font-size: 11px
+}
+.form-table input {
+	line-height: 20px;
+	font-size: 15px;
+	padding: 2px;
+	border: 1px #dfdfdf solid;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	font-family: sans-serif
+}
+.form-table input[type=text],.form-table input[type=password] {
+	width: 206px
+}
+/*.form-table th p {
+	font-weight: normal
+}
+.form-table.install-success td {
+	vertical-align: middle;
+	padding: 16px 20px 10px 0
+}
+.form-table.install-success td p {
+	margin: 0;
+	font-size: 14px
+}
+.form-table.install-success td code {
+	margin: 0;
+	font-size: 18px
+}*/
+#error-page {
+	margin-top: 50px
+}
+#error-page p {
+	font-size: 14px;
+	line-height: 18px;
+	margin: 25px 0 20px
+}
+#error-page code,.code {
+	font-family: Consolas,Monaco,monospace
+}
+/*#pass-strength-result {
+	background-color: #eee;
+	border-color: #ddd!important;
+	border-style: solid;
+	border-width: 1px;
+	margin: 5px 5px 5px 0;
+	padding: 5px;
+	text-align: center;
+	width: 200px;
+	display: none
+}
+#pass-strength-result.bad {
+	background-color: #ffb78c;
+	border-color: #ff853c!important
+}
+#pass-strength-result.good {
+	background-color: #ffec8b;
+	border-color: #fc0!important
+}
+#pass-strength-result.short {
+	background-color: #ffa0a0;
+	border-color: #f04040!important
+}
+#pass-strength-result.strong {
+	background-color: #c3ff88;
+	border-color: #8dff1c!important
+}*/
+.message {
+	border: 1px solid #e6db55;
+	padding: .3em .6em;
+	margin: 5px 0 15px;
+	background-color: #ffffe0
+}
+/*body.rtl {
+	font-family: Tahoma,arial
+}
+.rtl h1 {
+	font-family: arial;
+	margin: 5px -4px 0 0
+}
+.rtl ul,.rtl ol {
+	padding: 5px 22px 5px 5px
+}
+.rtl .step,.rtl th,.rtl .form-table th {
+	text-align: right
+}
+.rtl .submit input,.rtl .button,.rtl .button-secondary {
+	margin-right: 0
+}
+.rtl #dbname,.rtl #uname,.rtl #pwd,.rtl #dbhost,.rtl #prefix,.rtl #user_login,.rtl #admin_email,.rtl #pass1,.rtl #pass2 {
+	direction: ltr
+}*/
+
+
+/*src: http://liljosh.com/css3-google-buttons/*/
+button.gray, a.gray, input[type=submit].gray {
+		margin-left: 300px;
+    padding: 10px 10px;
+    -webkit-border-radius: 2px 2px;
+    border: solid 1px #dadada;
+    background: #f4f4f4; /* Old browsers */
+    background: -moz-linear-gradient(top,  #f4f4f4 0%, #f1f1f1 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#f4f4f4), color-stop(100%,#f1f1f1)); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top,  #f4f4f4 0%,#f1f1f1 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top,  #f4f4f4 0%,#f1f1f1 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top,  #f4f4f4 0%,#f1f1f1 100%); /* IE10+ */
+    background: linear-gradient(top,  #f4f4f4 0%,#f1f1f1 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f4f4f4', endColorstr='#f1f1f1',GradientType=0 ); /* IE6-9 */
+    color: #555;
+    text-decoration: none;
+    cursor: pointer;
+    display: inline-block;
+    text-align: center;
+    font-weight:bold;
+    text-shadow: 0px 1px 1px rgba(255,255,255,1);
+		font-size: 13px!important;
+		line-height: 16px;
+		padding: 6px 11px;
+}
+ 
+.gray:hover {
+    border:1px solid #c6c6c4;
+    background: background: #f8f8f8; /* Old browsers */
+    background: -moz-linear-gradient(top,  #f8f8f8 0%, #f1f1f1 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#f8f8f8), color-stop(100%,#f1f1f1)); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top,  #f8f8f8 0%,#f1f1f1 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top,  #f8f8f8 0%,#f1f1f1 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top,  #f8f8f8 0%,#f1f1f1 100%); /* IE10+ */
+    background: linear-gradient(top,  #f8f8f8 0%,#f1f1f1 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f8f8f8', endColorstr='#f1f1f1',GradientType=0 ); /* IE6-9 */
+    color: #222;
+    -webkit-box-shadow: 0px 0px 1px 0px rgba(10, 10, 10, 0.4);
+    -moz-box-shadow: 0px 0px 1px 0px rgba(10, 10, 10, 0.4);
+    box-shadow: 0px 0px 1px 0px rgba(10, 10, 10, 0.4);
+}
+ 
+.gray:active {
+    border:1px solid #c6c6c4;
+    color: #222;
+    -webkit-box-shadow: inset 0 0 2px 4px #f1f1f1, 0 1px 0 0 #eeeeee;
+    -moz-box-shadow: inset 0 0 2px 4px #f1f1f1, 0 1px 0 0 #eeeeee;
+    box-shadow: inset 0 0 2px 4px #f1f1f1, 0 1px 0 0 #eeeeee;
+}
+</style>
+</head>
+<body>
+<h1 id="logo"><font color="#0013F5">G</font><font color="#E0201B">o</font><font color="#F2B50F">o</font><font color="#0013F5">g</font><font color="#00933B">l</font><font color="#E0201B">e</font><font color="#AAA">-</font><font color="#9F3ED5	">c</font><font color="#7109AA">m</font><font color="#48036F">s</font></h1>
+
+<form method="post" action="setup-config.php?step=2">
+	<p>Welcome to google-cms. Befor getting started, you need to associate this web-site with a Google account.<br>The unique function of google-cms will be to synchronize all the files inside a Google Docs folder to this this web-server.</p>
+	<table class="form-table">
+		<tr>
+			<th scope="row"><label for="login">Google Account</label></th>
+			<td><input name="dbname" id="dbname" type="text" size="25" value="mail address" /></td>
+			<td>The name of the database you want to run WP in.</td>
+		</tr>
+		<tr>
+			<th scope="row"><label for="password">Password</label></th>
+			<td><input name="uname" id="uname" type="text" size="25" value="password" /></td>
+			<td>Your MySQL username</td>
+		</tr>
+		<tr>
+			<th scope="row"><label for="pwd">Root Folder ID</label></th>
+			<td><input name="pwd" id="pwd" type="text" size="25" value="password" /></td>
+			<td>&hellip;and your MySQL password.</td>
+		</tr>
+	</table>
+	<button class="gray">Submit</button>
+</form>
+</body>
+</html>
