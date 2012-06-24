@@ -1,4 +1,0 @@
-src/PageDownloader:
-	backup images/drawings/forumlas (with an option in config.php?)
-
-doc...
