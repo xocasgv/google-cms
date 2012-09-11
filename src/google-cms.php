@@ -183,7 +183,8 @@ CSS;
 include_once('$templatePath');
 ?>
 EOD;
-		Output::store($pageString, $target);
+    if(strlen($docid) != 0)
+		  Output::store($pageString, $target);
 	}
 }
 
